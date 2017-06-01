@@ -64,6 +64,18 @@ public class Form extends JFrame{
                     Wizard wizard = new Wizard(from, to, pb);
                     thread = new Thread(wizard);
                     thread.start();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            while(thread.isAlive()) {
+                                if(wizard.getPb().getValue() >= 100) {
+                                    JOptionPane.showMessageDialog(Form.this, "Process finished", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                    changeFields();
+                                    break;
+                                }
+                            }
+                        }
+                    }).start();
                     break;
                 case "Stop":
                     thread.interrupt();
