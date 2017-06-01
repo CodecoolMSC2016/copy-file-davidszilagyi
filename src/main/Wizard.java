@@ -9,6 +9,7 @@ import java.io.*;
 public class Wizard implements Runnable {
     private String source;
     private String dest;
+    private JLabel pbLabel;
     private JProgressBar pb;
     long bytes;
     long rounds;
@@ -16,10 +17,11 @@ public class Wizard implements Runnable {
     private OutputStream os = null;
     boolean running;
 
-    public Wizard(String source, String dest, JProgressBar pb) {
+    public Wizard(String source, String dest, JPanel jPanel) {
         this.source = source;
         this.dest = dest;
-        this.pb = pb;
+        this.pbLabel = (JLabel)jPanel.getComponent(0);
+        this.pb = (JProgressBar)jPanel.getComponent(1);
     }
 
     public String getSource() {
@@ -49,7 +51,9 @@ public class Wizard implements Runnable {
                 if(Thread.currentThread().isInterrupted())  {
                     running = false;
                 }
-                pb.setValue((int)(Math.ceil(((double)round / rounds) * 100)));
+                int current = (int)(Math.ceil(((double)round / rounds) * 100));
+                pbLabel.setText(String.format("Done: %d%s", current, "%"));
+                pb.setValue(current);
                 os.write(buffer, 0, length);
                 round++;
             }
