@@ -6,8 +6,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by David Szilagyi on 2017. 06. 01..
@@ -78,33 +76,32 @@ public class Form extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 switch (e.getActionCommand()) {
                     case "Copy":
-                        String from = sourceField.getText();
-                        String to = destField.getText();
-                        changeFields();
-                        Wizard wizard = new Wizard(from, to);
-                        thread = new Thread(wizard);
-                        thread.start();
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                while (thread.isAlive()) {
-                                    int current = wizard.getCurrent();
-                                    pbLabel.setText(String.format("Done: %d%s", current, "%"));
-                                    pb.setValue(current);
-                                    if (pb.getValue() >= 100) {
-                                        //JOptionPane.showMessageDialog(Form.this, "Process finished", "Success", JOptionPane.INFORMATION_MESSAGE);
-                                        changeFields();
-                                        break;
+                        Wizard wizard = new Wizard(sourceField.getText(), destField.getText()) {
+                            public void changePb(int current) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pbLabel.setText(String.format("Done: %d%s", current, "%"));
+                                        pb.setValue(current);
+                                        if (pb.getValue() >= 100) {
+                                            //JOptionPane.showMessageDialog(Form.this, "Process finished", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                            changeFields();
+                                            thread = null;
+                                        }
                                     }
-                                }
+
+                                });
                             }
-                        }).start();
+                        };
+                        thread = new Thread(wizard);
+                        SwingUtilities.invokeLater(() -> changeFields());
+                        thread.start();
                         break;
                     case "Stop":
                         thread.interrupt();
                         JOptionPane.showMessageDialog(Form.this, "Process stopped", "Stopped", JOptionPane.ERROR_MESSAGE);
-
                         changeFields();
+                        thread = null;
                         break;
                     default:
                         break;
@@ -117,9 +114,8 @@ public class Form extends JFrame {
             destField.setEnabled(!destField.isEnabled());
             startButton.setEnabled(!startButton.isEnabled());
             stopButton.setEnabled(!stopButton.isEnabled());
-            this.pbLabel.setText("Waiting...");
-            this.pb.setValue(0);
-            thread = null;
+            pbLabel.setText("Waiting...");
+            pb.setValue(0);
         }
     }
 }

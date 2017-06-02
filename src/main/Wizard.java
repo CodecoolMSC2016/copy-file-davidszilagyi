@@ -5,7 +5,7 @@ import java.io.*;
 /**
  * Created by David Szilagyi on 2017. 05. 31..
  */
-public class Wizard implements Runnable {
+public abstract class Wizard implements Runnable {
     private String source;
     private String dest;
     long bytes;
@@ -13,7 +13,6 @@ public class Wizard implements Runnable {
     private InputStream is = null;
     private OutputStream os = null;
     boolean running;
-    int current = 0;
 
     public Wizard(String source, String dest) {
         this.source = source;
@@ -26,10 +25,6 @@ public class Wizard implements Runnable {
 
     public String getDest() {
         return dest;
-    }
-
-    public int getCurrent() {
-        return current;
     }
 
     @Override
@@ -47,7 +42,7 @@ public class Wizard implements Runnable {
                 if(Thread.currentThread().isInterrupted())  {
                     running = false;
                 }
-                current = (int)(Math.ceil(((double)round / rounds) * 100));
+                changePb((int)(Math.ceil(((double)round / rounds) * 100)));
                 os.write(buffer, 0, length);
                 round++;
             }
@@ -60,4 +55,5 @@ public class Wizard implements Runnable {
             e.printStackTrace();
         }
     }
+    public abstract void changePb(int current);
 }
