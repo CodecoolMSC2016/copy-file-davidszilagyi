@@ -1,6 +1,5 @@
 package main;
 
-import javax.swing.*;
 import java.io.*;
 
 /**
@@ -9,19 +8,16 @@ import java.io.*;
 public class Wizard implements Runnable {
     private String source;
     private String dest;
-    private JLabel pbLabel;
-    private JProgressBar pb;
     long bytes;
     long rounds;
     private InputStream is = null;
     private OutputStream os = null;
     boolean running;
+    int current = 0;
 
-    public Wizard(String source, String dest, JPanel jPanel) {
+    public Wizard(String source, String dest) {
         this.source = source;
         this.dest = dest;
-        this.pbLabel = (JLabel)jPanel.getComponent(0);
-        this.pb = (JProgressBar)jPanel.getComponent(1);
     }
 
     public String getSource() {
@@ -32,8 +28,8 @@ public class Wizard implements Runnable {
         return dest;
     }
 
-    public JProgressBar getPb() {
-        return pb;
+    public int getCurrent() {
+        return current;
     }
 
     @Override
@@ -51,9 +47,7 @@ public class Wizard implements Runnable {
                 if(Thread.currentThread().isInterrupted())  {
                     running = false;
                 }
-                int current = (int)(Math.ceil(((double)round / rounds) * 100));
-                pbLabel.setText(String.format("Done: %d%s", current, "%"));
-                pb.setValue(current);
+                current = (int)(Math.ceil(((double)round / rounds) * 100));
                 os.write(buffer, 0, length);
                 round++;
             }
