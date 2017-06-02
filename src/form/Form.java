@@ -6,6 +6,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+
+import static javax.swing.filechooser.FileSystemView.getFileSystemView;
 
 /**
  * Created by David Szilagyi on 2017. 06. 01..
@@ -35,33 +38,41 @@ public class Form extends JFrame {
         JPanel textPanel, progressBar, buttonsPanel;
         JLabel sourceLabel, destLabel, pbLabel;
         JTextField sourceField, destField;
-        JButton startButton, stopButton;
+        JButton startButton, stopButton, sourceButton, destButton;
         JProgressBar pb;
         lForButton action;
+        JFileChooser fc;
         Thread thread = null;
 
         public Panel() {
             this.textPanel = new JPanel();
-            this.textPanel.setLayout(new GridLayout(2, 1));
+            this.textPanel.setLayout(new GridLayout(2, 3));
             this.progressBar = new JPanel();
             progressBar.setLayout(new GridLayout(2, 1));
             this.buttonsPanel = new JPanel();
-            this.buttonsPanel.setLayout(new GridLayout(1, 2));
-            this.sourceLabel = new JLabel("Source:");
-            sourceLabel.setHorizontalAlignment(JLabel.RIGHT);
-            this.destLabel = new JLabel("Destination: ");
-            destLabel.setHorizontalAlignment(JLabel.RIGHT);
+            //this.buttonsPanel.setLayout(new GridLayout(1, 2));
+//            this.sourceLabel = new JLabel("Source:");
+//            sourceLabel.setHorizontalAlignment(JLabel.RIGHT);
             this.sourceField = new JTextField("", 25);
+            this.sourceButton = new JButton("Source");
+            sourceButton.setHorizontalAlignment(JLabel.RIGHT);
+//            this.destLabel = new JLabel("Destination: ");
+//            destLabel.setHorizontalAlignment(JLabel.RIGHT);
             this.destField = new JTextField("", 25);
+            this.destButton = new JButton("Destination");
+            destButton.setHorizontalAlignment(JLabel.RIGHT);
             this.startButton = new JButton("Copy");
             this.stopButton = new JButton("Stop");
             this.stopButton.setEnabled(false);
             this.pb = new JProgressBar(0, 100);
             this.pbLabel = new JLabel("Waiting...");
-            this.textPanel.add(sourceLabel);
+            this.textPanel.add(sourceButton);
+//            this.textPanel.add(sourceLabel);
             this.textPanel.add(sourceField);
-            this.textPanel.add(destLabel);
+//            this.textPanel.add(destLabel);
+            this.textPanel.add(destButton);
             this.textPanel.add(destField);
+            this.fc = new JFileChooser("D:\\");
             this.progressBar.add(pbLabel, 0);
             this.progressBar.add(pb, 1);
             this.buttonsPanel.add(startButton);
@@ -69,6 +80,8 @@ public class Form extends JFrame {
             this.action = new lForButton();
             startButton.addActionListener(action);
             stopButton.addActionListener(action);
+            sourceButton.addActionListener(action);
+            destButton.addActionListener(action);
         }
 
         private class lForButton implements ActionListener {
@@ -89,7 +102,6 @@ public class Form extends JFrame {
                                             thread = null;
                                         }
                                     }
-
                                 });
                             }
                         };
@@ -103,6 +115,21 @@ public class Form extends JFrame {
                         changeFields();
                         thread = null;
                         break;
+                    case "Source":
+                        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                        int source = fc.showOpenDialog(Form.this);
+                        if (source == JFileChooser.APPROVE_OPTION) {
+                            sourceField.setText(fc.getSelectedFile().getPath());
+                        }
+                        break;
+                    case "Destination":
+                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        int dest = fc.showOpenDialog(Form.this);
+                        if (dest == JFileChooser.APPROVE_OPTION) {
+                            String fileName = sourceField.getText().split("\\\\")[sourceField.getText().split("\\\\").length - 1];
+                            destField.setText(String.format("%s\\%s", fc.getSelectedFile(), fileName));
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -111,7 +138,9 @@ public class Form extends JFrame {
 
         private void changeFields() {
             sourceField.setEnabled(!sourceField.isEnabled());
+            sourceButton.setEnabled(!sourceButton.isEnabled());
             destField.setEnabled(!destField.isEnabled());
+            destButton.setEnabled(!destButton.isEnabled());
             startButton.setEnabled(!startButton.isEnabled());
             stopButton.setEnabled(!stopButton.isEnabled());
             pbLabel.setText("Waiting...");
